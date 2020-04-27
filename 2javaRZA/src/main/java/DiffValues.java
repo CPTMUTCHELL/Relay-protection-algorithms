@@ -1,7 +1,8 @@
 public class DiffValues {
     private double[] diffsum;
     private double diffbrake=0;
-    double high=1;
+    private double high=1;
+
     public double getDiffPhB() {
         return diffsum[1]/high;
     }

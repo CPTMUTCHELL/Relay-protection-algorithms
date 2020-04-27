@@ -1,42 +1,35 @@
 import java.util.Arrays;
 
 public class DiffFilter {
-
-
-    public DiffFilter(RMSValues Hrms, RMSValues Lrms,DiffValues diffValues) {
-        this.Hrms = Hrms;
-        this.Lrms=Lrms;
+    public DiffFilter(DiffValues diffValues) {
         this.diffValues=diffValues;
     }
-    private RMSValues Hrms;
-    private RMSValues Lrms;
     private DiffValues diffValues;
-    double[] diffX=new double[3];
-    double[] diffY=new double[3];
-    double[] diffSum=new double[3];
-    double maxBrake =0;
-    double[] Hbrake =new double[3];
-    double[] Lbrake =new double[3];
-    double[] diffMassiv =new double[3];
+    private double[] diffX=new double[3];//X вектор
+    private double[] diffY=new double[3];//Y вектор
+    private double[] diffSum=new double[3];//Векторная сумма
+    private double maxBrake =0;//Торм.ток
+    private double[] Hbrake =new double[3];//Токи rms с выс.стороны
+    private double[] Lbrake =new double[3];//Токи rms с низ.стороны
+    private double[] diffMassiv =new double[3];//массив диф.токов пофазно
 
     void calcDiffSum(double Hph, double Lph, int i, double Hangle, double Langle){
-        Hbrake[i]+=Hph;
-        Lbrake[i]+=Lph;
+        Hbrake[i]=Hph;
+        Lbrake[i]=Lph;
+        //Расчёт диф.тока
         diffX[i]+=Hph*Math.cos(Math.toRadians(Hangle))+Lph*Math.cos(Math.toRadians(Langle));
         diffY[i]+=Hph*Math.sin(Math.toRadians(Hangle))+Lph*Math.sin(Math.toRadians(Langle));
         diffSum[i]=Math.sqrt(Math.pow(diffX[i],2)+Math.pow(diffY[i],2));
-
-        diffMassiv[i]=Math.abs(diffSum[i]);
+        diffMassiv[i]=diffSum[i];
         diffValues.setDiffsum(diffMassiv);
         diffX[i]=0;
         diffY[i]=0;
 
-        maxBrake += Math.abs(maxBrake(Hbrake,Lbrake));
+        maxBrake = Math.abs(maxBrake(Hbrake,Lbrake));
         diffValues.setDiffbrake(maxBrake);
-        Hbrake[i]=0;
-        Lbrake[i]=0;
 
     }
+    //Функция выбора макс.тока из всех фаз и всех сторон
     double maxBrake(double[]Hbrake,double[]Lbrake){
         double Hmax=Hbrake[0];
         double Lmax=Lbrake[0];

@@ -125,5 +125,4 @@ public class Charts {
         if(lastData && !data) tempSeries.add(currentTime, data?2.0:0.0);
 
     }
-
 }

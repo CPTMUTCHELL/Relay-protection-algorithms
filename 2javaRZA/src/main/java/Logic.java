@@ -1,39 +1,30 @@
 public class Logic {
-    private double tripPoint = 2.97;
-
-    public Logic(DiffValues dv1, DiffValues dv2, RMSValues rms) {
+    public Logic(DiffValues dv1, DiffValues dv2) {
         this.dv1 = dv1;
         this.dv2 = dv2;
-        this.rms = rms;
     }
-
     private DiffValues dv1, dv2;
-    private RMSValues rms;
     private boolean trip=false;
-    double endsection1=1;
-    double endsection2=5;
-    double Idmin=0.427;
-    double IdUnre=2;
-
-    double slopeSection2=0.3;
-    double slopeSection3=0.3;
-
-
+    private double endsection1=1;//конец 1-ого уч
+    private double endsection2=5;//конец 2-ого уч
+    private double Idmin=0.427; //нач.диф.ток
+    private double IdUnre=2; //отсечка
+    private double slopeSection2=0.3;//наклон на 2м уч.
+    private double slopeSection3=0.3;//наклон на 3м уч.
 
     public void process()  {
-        trip= (cutoff()|brakechar()) ;
-        Charts.addAnalogData(0, 2, Idmin);
-        Charts.addAnalogData(1, 2, Idmin);
-        Charts.addAnalogData(2, 2, Idmin);
+        if (!harmonicblock()){
+            trip = brakechar() | cutoff();
+        }
         Charts.addDiscreteData(0, trip);
-       // if (rms.getTime()>1424000) Charts.addDiscreteData(0, trip);
+
     }
-
-
-    boolean brakechar(){
+    //Функция диф.защиты с торможением
+    private boolean brakechar(){
         trip=false;
-        double section1=slopeSection2*(dv1.getDiffbrake()-endsection1)+Idmin;
+        double section1=slopeSection2*(dv1.getDiffbrake()-endsection1)+Idmin;//расчёт хар-ки срабатываний
         double section2=slopeSection3*(dv1.getDiffbrake()-endsection2)+Idmin;
+
         if (dv1.getDiffbrake()<endsection2 && dv1.getDiffbrake()>endsection1){
             if (dv1.getDiffPhA()>section1| dv1.getDiffPhB()>section1| dv1.getDiffPhC()>section1) trip=true;
         }
@@ -43,15 +34,16 @@ public class Logic {
         else if (dv1.getDiffPhA()>Idmin| dv1.getDiffPhB()>Idmin| dv1.getDiffPhC()>Idmin) trip=true;
         return trip;
     }
-    boolean cutoff(){
+    //Функция отсечки
+    private boolean cutoff(){
         trip=false;
         if (dv1.getDiffPhA()>IdUnre| dv1.getDiffPhB()>IdUnre| dv1.getDiffPhC()>IdUnre) trip=true;
         return trip;
     }
-    boolean harmonicblock() {
+    //Функция блокировки по 2й гарм.
+    private boolean harmonicblock() {
         trip=false;
-        if (dv2.getDiffPhA()/dv1.getDiffPhA()>0.4|dv2.getDiffPhB()/dv1.getDiffPhB()>0.4|dv2.getDiffPhC()/dv1.getDiffPhC()>0.4) trip=true;
-        System.out.println(trip);
+        if (dv2.getDiffPhA()/dv1.getDiffPhA()>2|dv2.getDiffPhB()/dv1.getDiffPhB()>2|dv2.getDiffPhC()/dv1.getDiffPhC()>2) trip=true;
         return trip;
     }
 }
